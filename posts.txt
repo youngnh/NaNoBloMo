@@ -1,0 +1,26 @@
++ pallet to set up a Hadoop cluster on EC2
++ cascalog to query that cluster
++ crane and SQS
++ jQuery and the list monad
++ clutch and couchdb
++ parenscript and couchdb views (Common Lisp interlude)
++ polymorphism and our inheritance problem from work
++ parsley + regex for parsing SPARQL
++ parsec + TDFA for SPARQL (Haskell interlude)
++ the-kenny's couchdb lib to do what the clutch post did
++ my own CGrand-DSL-style EC2 lib (and how it might be a monad)
++ polymorphism via multimethods on our work problem
++ enlive to build the baseball app pages
++ lazytest
++ clojure parenscript library (scriptjure?)
++ fnparse
++ Haskell's fmap, clojure.contrib.functor/fmap, Devlin's `same`
++ macro-writing macros
+
+Other cool stuff to think on:
+  clj-sys/work
+  markick/midje
+  a Hudson-driven green-balls/red-balls screen saver in Clojure (using clj-processing or jna+xscreensaver...)
+  implementation of flocking paper in Clojure (include in clj-processing app)
+  trammel (what's a unifier?)
+  could Hadoop fetch Yahoo Fantasy Baseball's pages in parallel, from multiple machines at once? how would you throttle something like that?
