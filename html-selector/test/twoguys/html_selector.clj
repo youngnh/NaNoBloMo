@@ -26,6 +26,6 @@
 
 (deftest test-class-sel
   (let [document (build-document "data/matchup_mid1_mid2_week1.html")
-	rows ($ document "#statTable1" "tbody" "tr")]
+	selector #(class-sel % ".pos")]
     (is (= ["C" "1B" "2B" "3B" "SS" "LF" "CF" "RF" "Util" "BN" "BN" "BN" "BN" "BN" "BN" "--" "--" "--"]
-	   (map #(.getTextContent %) (mapcat #(class-sel % ".pos") rows))))))
+	   ($ document "#statTable1" "tbody" "tr" selector text-sel)))))

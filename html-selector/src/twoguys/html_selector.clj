@@ -11,7 +11,7 @@
 
 (defn id-sel [document id]
   (let [id (.substring id 1)]
-    [(.getElementById document id)]))
+    (list (.getElementById document id))))
 
 (defn nodelist-seq [node-list]
   (letfn [(internal [i]
@@ -52,11 +52,23 @@
 (defn class-sel [node class]
   (selector node #(hasclass? % (.substring class 1))))
 
-(defn compile-selector [s]
+(defmulti compile-selector type)
+
+(defmethod compile-selector clojure.lang.IFn [f]
+  f)
+
+(defmethod compile-selector String [s]
   (condp = (.charAt s 0)
       \# #(id-sel % s)
       \. #(class-sel % s)
       #(element-sel % s)))
 
+(defn text-sel [node]
+  (list (.getTextContent node)))
+
+(defn flip [f]
+  (fn [& args]
+    (apply f (reverse args))))
+
 (defn $ [node & selectors]
-  (reduce (fn [c f-sel] (mapcat f-sel c)) [node] (map compile-selector selectors)))
+  (reduce (flip mapcat) [node] (map compile-selector selectors)))
