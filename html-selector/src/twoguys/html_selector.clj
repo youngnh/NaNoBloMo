@@ -20,6 +20,19 @@
 	       (cons (.item node-list i) (internal (inc i))))))]
     (internal 0)))
 
+(defn selector [nodes pred]
+  (let [children (apply concat
+			(for [node nodes]
+			  (nodelist-seq (.getChildNodes node))))]
+    (lazy-cat
+     (filter pred children)
+     (when-not (empty? children)
+       (selector children pred)))))
+
+(defn element-tagname [elt]
+  (when (= Node/ELEMENT_NODE (.getNodeType elt))
+    (.getNodeName elt)))
+
 (defmulti element-sel (fn [context elt-name]
 			(condp instance? context
 			  Document Document
@@ -29,17 +42,7 @@
   (nodelist-seq (.getElementsByTagName document elt-name)))
 
 (defmethod element-sel :default [nodes elt-name]
-  (let [children (apply concat
-			(for [node nodes]
-			  (nodelist-seq (.getChildNodes node))))]
-    (lazy-cat
-     (filter #(= elt-name (element-tagname %)) children)
-     (when-not (empty? children)
-       (element-sel children elt-name)))))
-
-(defn element-tagname [elt]
-  (when (= Node/ELEMENT_NODE (.getNodeType elt))
-    (.getNodeName elt)))
+  (selector nodes #(= elt-name (element-tagname %))))
 
 (defn get-attribute [elt attr]
   (.?. elt getAttributes (getNamedItem attr) getValue))
@@ -49,11 +52,13 @@
     (some #(= class %) (split class-attr #" "))))
 
 (defn class-sel [nodes class]
-  (let [class-name (.substring class 1)
-	children (apply concat
-			(for [node nodes]
-			  (nodelist-seq (.getChildNodes node))))]
-    (lazy-cat
-     (filter #(hasclass? % class-name) children)
-     (when-not (empty? children)
-       (class-sel children class)))))
+  (selector nodes #(hasclass? % (.substring class 1))))
+
+(defn compile-selector [s]
+  (condp = (.charAt s 0)
+      \# #(id-sel % s)
+      \. #(class-sel % s)
+      #(element-sel % s)))
+
+(defn $ [context & selectors]
+  (reduce (fn [c f-sel] (f-sel c)) context (map compile-selector selectors)))

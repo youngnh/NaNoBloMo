@@ -1,4 +1,4 @@
-(ns twoguys.html-selector-test
+(ns twoguys.html-selector
   (:use [twoguys.html-selector] :reload-all)
   (:use [clojure.test])
   (:import [org.w3c.dom Document]))
@@ -8,13 +8,13 @@
 
 (deftest test-element-tagname
   (let [document (build-document "data/matchup_mid1_mid2_week1.html")
-	table-elts (element-sel document "table")]
+	table-elts ($ document "table")]
     (is (= "table" (element-tagname (first table-elts))))))
 
 (deftest test-element-sel
   (let [document (build-document "data/matchup_mid1_mid2_week1.html")
-	$matchup-summary (id-sel document "#matchup-summary")
-	$matchup (id-sel document "#matchup")]
+	$matchup-summary ($ document "#matchup-summary")
+	$matchup ($ document "#matchup")]
 
     (testing "given a Document, the context is the whole DOM"
       (is (= 13 (count (element-sel document "table")))))
@@ -26,9 +26,7 @@
 
 (deftest test-class-sel
   (let [document (build-document "data/matchup_mid1_mid2_week1.html")
-	$statTable1 (id-sel document "#statTable1")
-	$rows (-> $statTable1
-		  (element-sel "tbody")
-		  (element-sel "tr"))]
+	$statTable1 ($ document "#statTable1")
+	$rows ($ $statTable1 "tbody" "tr")]
     (is (= ["C" "1B" "2B" "3B" "SS" "LF" "CF" "RF" "Util" "BN" "BN" "BN" "BN" "BN" "BN" "--" "--" "--"]
 	   (map #(.getTextContent %) (class-sel $rows ".pos"))))))
