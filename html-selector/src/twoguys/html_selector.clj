@@ -21,13 +21,7 @@
 	       (cons (.item node-list i) (internal (inc i))))))]
     (internal 0)))
 
-(defn dom-seq1 [root-node]
-  (let [branch? #(< (.. % getChildNodes getLength) 0)
-	children #(nodelist-seq (.getChildNodes %))
-	make-node identity]
-   (iterate zip/next (zip/zipper branch? children make-node root-node))))
-
-(defn dom-seq2 [root-node]
+(defn dom-seq [root-node]
   (let [children (nodelist-seq (.getChildNodes root-node))]
     (lazy-cat
      children
