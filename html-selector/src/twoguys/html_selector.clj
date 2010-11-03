@@ -2,7 +2,8 @@
   (:use [clojure.string :only (split)]
 	[clojure.contrib.core :only (.?.)]
 	[clojure.java.io :only (reader)])
-  (:import [nu.validator.htmlparser.dom HtmlDocumentBuilder]
+  (:import [java.util Iterator]
+	   [nu.validator.htmlparser.dom HtmlDocumentBuilder]
 	   [org.w3c.dom Document Node]
 	   [org.xml.sax InputSource]))
 
@@ -14,11 +15,16 @@
     (list (.getElementById document id))))
 
 (defn nodelist-seq [node-list]
-  (letfn [(internal [i]
-	    (lazy-seq
-	     (when (< i (.getLength node-list))
-	       (cons (.item node-list i) (internal (inc i))))))]
-    (internal 0)))
+  (iterator-seq
+   (let [i (atom 0)]
+     (reify Iterator
+       (hasNext [_]
+	 (< @i (.getLength node-list)))
+       (next [_]
+	 (try
+	   (.item node-list @i)
+	   (finally
+	    (swap! i inc))))))))
 
 (defn selector [node pred]
   (let [children (nodelist-seq (.getChildNodes node))]
