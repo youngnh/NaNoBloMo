@@ -1,4 +1,5 @@
 (ns twoguys.html-selector
+  (:require [clojure.zip :as zip])
   (:use [clojure.string :only (split)]
 	[clojure.contrib.core :only (.?.)]
 	[clojure.java.io :only (reader)])
@@ -20,12 +21,18 @@
 	       (cons (.item node-list i) (internal (inc i))))))]
     (internal 0)))
 
-(defn selector [node pred]
-  (let [children (nodelist-seq (.getChildNodes node))]
+(defn dom-seq1 [root-node]
+  (let [branch? #(< (.. % getChildNodes getLength) 0)
+	children #(nodelist-seq (.getChildNodes %))
+	make-node identity]
+   (iterate zip/next (zip/zipper branch? children make-node root-node))))
+
+(defn dom-seq2 [root-node]
+  (let [children (nodelist-seq (.getChildNodes root-node))]
     (lazy-cat
-     (filter pred children)
+     children
      (when-not (empty? children)
-       (mapcat #(selector % pred) children)))))
+       (mapcat dom-seq children)))))
 
 (defn element-tagname [elt]
   (when (= Node/ELEMENT_NODE (.getNodeType elt))
@@ -40,7 +47,7 @@
   (nodelist-seq (.getElementsByTagName document elt-name)))
 
 (defmethod element-sel Node [node elt-name]
-  (selector node #(= elt-name (element-tagname %))))
+  (filter #(= elt-name (element-tagname %)) (dom-seq node)))
 
 (defn get-attribute [elt attr]
   (.?. elt getAttributes (getNamedItem attr) getValue))
@@ -50,7 +57,7 @@
     (some #(= class %) (split class-attr #" "))))
 
 (defn class-sel [node class]
-  (selector node #(hasclass? % (.substring class 1))))
+  (filter #(hasclass? % (.substring class 1)) (dom-seq node)))
 
 (defmulti compile-selector type)
 
